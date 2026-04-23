@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Confidence Timer PRO</title>
+<meta name="viewport" content="width=1920, height=1080">
+
+<style>
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow: hidden;
+}
+
+#container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+#timer-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#timer {
+    font-size: 520px;
+    font-weight: 900;
+    letter-spacing: 6px;
+}
+
+.warning { color: orange; }
+.danger  { color: red; }
+.blink   { animation: blink 1s infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+#controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 18px;
+    opacity: 0.65;
+}
+
+#controls.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+button {
+    font-size: 16px;
+    padding: 6px 12px;
+    border-radius: 5px;
+    border: none;
+    background: #444;
+    color: white;
+    cursor: pointer;
+    transition: transform .08s, background .08s, box-shadow .08s;
+}
+
+button:active {
+    transform: scale(.95);
+    background: #222;
+    box-shadow: inset 0 0 8px rgba(0,0,0,.6);
+}
+
+button.flash {
+    box-shadow: 0 0 10px white;
+}
+
+#end-screen {
+    position: fixed;
+    inset: 0;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(180deg,#009fdc,#6cc24a);
+}
+
+#end-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.35);
+}
+#end-content { position: relative; }
+#end-title { font-size:180px; margin-bottom:40px; }
+#end-subtitle { font-size:62px; margin-bottom:30px; }
+#end-footer { font-size:54px; }
+</style>
+</head>
+
+<body>
+
+<div id="container">
+  <div id="timer-wrapper">
+    <div id="timer">00:00</div>
+  </div>
+
+  <div id="controls">
+    <button onclick="flash(this); toggle()">▶ / ⏸</button>
+    <button onclick="flash(this); resetToSelectedTime()">↻</button>
+
+    <button onclick="flash(this); setPreset(5)">5m</button>
+    <button onclick="flash(this); setPreset(10)">10m</button>
+    <button onclick="flash(this); setPreset(15)">15m</button>
+    <button onclick="flash(this); setPreset(20)">20m</button>
+    <button onclick="flash(this); setPreset(25)">25m</button>
+    <button onclick="flash(this); setPreset(30)">30m</button>
+
+    <button onclick="flash(this); manualTime()">Manual</button>
+    <button onclick="flash(this); toggleControls()">Hide</button>
+  </div>
+</div>
+
+<div id="end-screen">
+  <div id="end-overlay"></div>
+  <div id="end-content">
+    <div id="end-title">Tu tiempo ha terminado</div>
+    <div id="end-subtitle">Por favor, concluye tu participación.</div>
+    <div id="end-footer">¡Gracias por tu colaboración!</div>
+  </div>
+</div>
+
+<script>
+let totalSeconds = 0;
+let remaining = 0;
+let running = false;
+let interval = null;
+let endVisible = false;
+
+/* Feedback */
+function flash(b){
+  b.classList.add("flash");
+  setTimeout(()=>b.classList.remove("flash"),120);
+}
+
+function updateDisplay(){
+  const t=document.getElementById("timer");
+  t.textContent =
+    String(Math.floor(remaining/60)).padStart(2,'0') + ":" +
+    String(remaining%60).padStart(2,'0');
+
+  t.className="";
+  if(remaining<=60 && remaining>10) t.classList.add("warning");
+  if(remaining<=10) t.classList.add("danger","blink");
+}
+
+/* Timer */
+function tick(){
+  if(!running || remaining<=0) return;
+  remaining--;
+  updateDisplay();
+
+  if(remaining===0){
+    pause();
+    beep();
+    setTimeout(showEndScreen, 5000);
+  }
+}
+
+function start(){
+  if(running || remaining<=0) return;
+  running=true;
+  interval=setInterval(tick,1000);
+}
+
+function pause(){
+  running=false;
+  clearInterval(interval);
+}
+
+function toggle(){ running?pause():start(); }
+
+/* Presets */
+function setPreset(m){
+  pause();
+  hideEnd();
+  totalSeconds=m*60;
+  remaining=totalSeconds;
+  updateDisplay();
+}
+
+function manualTime(){
+  const m=prompt("Tiempo en minutos:");
+  if(!m || isNaN(m) || m<=0) return;
+  setPreset(parseInt(m));
+}
+
+/* 🔄 RESET QUE REINICIA Y ARRANCA */
+function resetToSelectedTime(){
+  if(totalSeconds<=0) return;
+  pause();
+  hideEnd();
+  remaining=totalSeconds;
+  updateDisplay();
+  start(); // ✅ empieza solo
+}
+
+/* UI */
+function toggleControls(){
+  document.getElementById("controls").classList.toggle("hidden");
+}
+
+/* Reset de fábrica */
+function factoryReset(){
+  pause();
+  endVisible=false;
+  totalSeconds=0;
+  remaining=0;
+  const t=document.getElementById("timer");
+  t.className="";
+  t.textContent="00:00";
+  document.getElementById("controls").classList.remove("hidden");
+  hideEnd();
+}
+
+/* Teclado */
+document.addEventListener("keydown",e=>{
+  if(endVisible){
+    if(e.key.toLowerCase()==='h') factoryReset();
+    return;
+  }
+  if(e.code==="Space"||e.key.toLowerCase()==='p') toggle();
+  if(e.key.toLowerCase()==='h') toggleControls();
+});
+
+/* Pantalla final */
+function showEndScreen(){
+  endVisible=true;
+  document.getElementById("container").style.display="none";
+  document.getElementById("end-screen").style.display="flex";
+}
+function hideEnd(){
+  endVisible=false;
+  document.getElementById("end-screen").style.display="none";
+  document.getElementById("container").style.display="flex";
+}
+
+/* Audio */
+function beep(){
+  const a=new (window.AudioContext||window.webkitAudioContext)();
+  const o=a.createOscillator();
+  o.connect(a.destination);
+  o.start();
+  setTimeout(()=>o.stop(),1200);
+}
+
+/* Arranque */
+factoryReset();
+</script>
+
+</body>
+</html>
