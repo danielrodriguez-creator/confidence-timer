@@ -1,260 +1,485 @@
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
+
 <meta charset="utf-8">
+
 <title>Confidence Timer PRO</title>
-<meta name="viewport" content="width=1920, height=1080">
+
+<meta name="viewport" content="width=1920,height=1080">
+
+ 
 
 <style>
-html, body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    background: black;
-    color: white;
-    font-family: Arial, Helvetica, sans-serif;
-    overflow: hidden;
+
+html,body{
+
+  margin:0;
+
+  width:100%;
+
+  height:100%;
+
+  background:black;
+
+  color:white;
+
+  font-family:Arial,Helvetica,sans-serif;
+
+  overflow:hidden;
+
 }
 
-#container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+ 
+
+/* ================= TIMER ================= */
+
+#screen{
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+
+  height:100%;
+
 }
 
-#timer-wrapper {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+#timer{
+
+  font-size:520px;
+
+  font-weight:900;
+
 }
 
-#timer {
-    font-size: 520px;
-    font-weight: 900;
-    letter-spacing: 6px;
+.warning{color:orange;}
+
+.danger{color:red;}
+
+.blink{animation:blink 1s infinite;}
+
+@keyframes blink{50%{opacity:0;}}
+
+ 
+
+/* ================= MANUAL ================= */
+
+#manual{
+
+  position:absolute;
+
+  top:40px;
+
+  width:100%;
+
+  text-align:center;
+
+  font-size:50px;
+
+  opacity:.85;
+
+  display:none;
+
 }
 
-.warning { color: orange; }
-.danger  { color: red; }
-.blink   { animation: blink 1s infinite; }
-@keyframes blink { 50% { opacity: 0; } }
+ 
 
-#controls {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    padding: 18px;
-    opacity: 0.65;
+/* ================= END ================= */
+
+#end{
+
+  position:fixed;
+
+  inset:0;
+
+  display:none;
+
+  justify-content:center;
+
+  align-items:center;
+
+  text-align:center;
+
+  background:
+
+    radial-gradient(circle at center,#ffcc66 0%,#ff9933 45%,#cc6600 100%);
+
 }
 
-#controls.hidden {
-    opacity: 0;
-    pointer-events: none;
+#endBox{
+
+  padding:80px;
+
+  background:rgba(0,0,0,.25);
+
 }
 
-button {
-    font-size: 16px;
-    padding: 6px 12px;
-    border-radius: 5px;
-    border: none;
-    background: #444;
-    color: white;
-    cursor: pointer;
-    transition: transform .08s, background .08s, box-shadow .08s;
+#end h1{
+
+  font-size:170px;
+
+  margin:0 0 40px;
+
+  color:#fff3c0;
+
+  text-shadow:0 6px 16px rgba(0,0,0,.6);
+
 }
 
-button:active {
-    transform: scale(.95);
-    background: #222;
-    box-shadow: inset 0 0 8px rgba(0,0,0,.6);
+#end p{
+
+  font-size:58px;
+
+  margin:20px 0;
+
 }
 
-button.flash {
-    box-shadow: 0 0 10px white;
+#end .thanks{
+
+  margin-top:30px;
+
+  font-size:70px;
+
+  color:#ffe9a6;
+
 }
 
-#end-screen {
-    position: fixed;
-    inset: 0;
-    display: none;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    background: linear-gradient(180deg,#009fdc,#6cc24a);
-}
-
-#end-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,.35);
-}
-#end-content { position: relative; }
-#end-title { font-size:180px; margin-bottom:40px; }
-#end-subtitle { font-size:62px; margin-bottom:30px; }
-#end-footer { font-size:54px; }
 </style>
+
 </head>
+
+ 
 
 <body>
 
-<div id="container">
-  <div id="timer-wrapper">
-    <div id="timer">00:00</div>
-  </div>
+ 
 
-  <div id="controls">
-    <button onclick="flash(this); toggle()">▶ / ⏸</button>
-    <button onclick="flash(this); resetToSelectedTime()">↻</button>
+<div id="screen">
 
-    <button onclick="flash(this); setPreset(5)">5m</button>
-    <button onclick="flash(this); setPreset(10)">10m</button>
-    <button onclick="flash(this); setPreset(15)">15m</button>
-    <button onclick="flash(this); setPreset(20)">20m</button>
-    <button onclick="flash(this); setPreset(25)">25m</button>
-    <button onclick="flash(this); setPreset(30)">30m</button>
+  <div id="timer">00:00</div>
 
-    <button onclick="flash(this); manualTime()">Manual</button>
-    <button onclick="flash(this); toggleControls()">Hide</button>
-  </div>
 </div>
 
-<div id="end-screen">
-  <div id="end-overlay"></div>
-  <div id="end-content">
-    <div id="end-title">Tu tiempo ha terminado</div>
-    <div id="end-subtitle">Por favor, concluye tu participación.</div>
-    <div id="end-footer">¡Gracias por tu colaboración!</div>
-  </div>
+ 
+
+<div id="manual">
+
+  Ajustar tiempo: <span id="manualValue">0</span> minutos<br>
+
+  OK confirmar · RETURN cancelar
+
 </div>
+
+ 
+
+<div id="end">
+
+  <div id="endBox">
+
+    <h1>Tu tiempo ha terminado</h1>
+
+    <p>Por favor, concluye tu participación.</p>
+
+    <div class="thanks">¡Gracias por tu colaboración!</div>
+
+  </div>
+
+</div>
+
+ 
 
 <script>
-let totalSeconds = 0;
-let remaining = 0;
-let running = false;
-let interval = null;
-let endVisible = false;
 
-/* Feedback */
-function flash(b){
-  b.classList.add("flash");
-  setTimeout(()=>b.classList.remove("flash"),120);
-}
+/* ================= ESTADO GLOBAL ================= */
+
+var total = 0;
+
+var remaining = 0;
+
+var running = false;
+
+var interval = null;
+
+var endTimestamp = 0;
+
+ 
+
+var mode = "IDLE"; // IDLE | MANUAL | RUNNING | END
+
+var manualBuffer = "";
+
+ 
+
+/* ================= HELPERS ================= */
+
+function pad(n){ return (n<10?"0":"")+n; }
+
+ 
 
 function updateDisplay(){
-  const t=document.getElementById("timer");
+
+  var t = document.getElementById("timer");
+
   t.textContent =
-    String(Math.floor(remaining/60)).padStart(2,'0') + ":" +
-    String(remaining%60).padStart(2,'0');
 
-  t.className="";
-  if(remaining<=60 && remaining>10) t.classList.add("warning");
-  if(remaining<=10) t.classList.add("danger","blink");
+    pad(Math.floor(remaining/60)) + ":" + pad(remaining%60);
+
+ 
+
+  t.className = "";
+
+  if(remaining<=60 && remaining>10) t.className="warning";
+
+  if(remaining<=10) t.className="danger blink";
+
 }
 
-/* Timer */
+ 
+
+/* ================= TIMER ROBUSTO ================= */
+
 function tick(){
-  if(!running || remaining<=0) return;
-  remaining--;
+
+  if(!running) return;
+
+ 
+
+  remaining = Math.max(
+
+    0,
+
+    Math.ceil((endTimestamp - Date.now()) / 1000)
+
+  );
+
+ 
+
   updateDisplay();
 
-  if(remaining===0){
-    pause();
-    beep();
-    setTimeout(showEndScreen, 5000);
+ 
+
+  if(remaining <= 0){
+
+    stopTimer();
+
+    setTimeout(showEnd, 1500);
+
   }
+
 }
 
-function start(){
-  if(running || remaining<=0) return;
-  running=true;
-  interval=setInterval(tick,1000);
+ 
+
+function startTimer(){
+
+  if(remaining<=0) return;
+
+  running = true;
+
+  mode = "RUNNING";
+
+  endTimestamp = Date.now() + remaining * 1000;
+
+  interval = setInterval(tick, 250); // tick rápido, cálculo real
+
 }
 
-function pause(){
-  running=false;
-  clearInterval(interval);
+ 
+
+function stopTimer(){
+
+  running = false;
+
+  if(interval){ clearInterval(interval); interval = null; }
+
 }
 
-function toggle(){ running?pause():start(); }
+ 
 
-/* Presets */
-function setPreset(m){
-  pause();
-  hideEnd();
-  totalSeconds=m*60;
-  remaining=totalSeconds;
+/* ================= MANUAL ================= */
+
+function startManual(digit){
+
+  mode = "MANUAL";
+
+  manualBuffer = digit || "";
+
+  document.getElementById("manual").style.display="block";
+
+  updateManual();
+
+}
+
+ 
+
+function updateManual(){
+
+  document.getElementById("manualValue").textContent =
+
+    manualBuffer==="" ? "0" : manualBuffer;
+
+}
+
+ 
+
+function confirmManual(){
+
+  total = parseInt(manualBuffer,10) * 60;
+
+  remaining = total;
+
+  document.getElementById("manual").style.display="none";
+
   updateDisplay();
+
+  startTimer();
+
 }
 
-function manualTime(){
-  const m=prompt("Tiempo en minutos:");
-  if(!m || isNaN(m) || m<=0) return;
-  setPreset(parseInt(m));
+ 
+
+function cancelManual(){
+
+  manualBuffer="";
+
+  mode="IDLE";
+
+  document.getElementById("manual").style.display="none";
+
 }
 
-/* 🔄 RESET QUE REINICIA Y ARRANCA */
-function resetToSelectedTime(){
-  if(totalSeconds<=0) return;
-  pause();
-  hideEnd();
-  remaining=totalSeconds;
-  updateDisplay();
-  start(); // ✅ empieza solo
+ 
+
+/* ================= END ================= */
+
+function showEnd(){
+
+  mode="END";
+
+  document.getElementById("end").style.display="flex";
+
 }
 
-/* UI */
-function toggleControls(){
-  document.getElementById("controls").classList.toggle("hidden");
-}
+ 
 
-/* Reset de fábrica */
-function factoryReset(){
-  pause();
-  endVisible=false;
-  totalSeconds=0;
-  remaining=0;
-  const t=document.getElementById("timer");
+function resetAll(){
+
+  stopTimer();
+
+  total = 0;
+
+  remaining = 0;
+
+  mode = "IDLE";
+
+  document.getElementById("end").style.display="none";
+
+  var t = document.getElementById("timer");
+
   t.className="";
+
   t.textContent="00:00";
-  document.getElementById("controls").classList.remove("hidden");
-  hideEnd();
+
 }
 
-/* Teclado */
-document.addEventListener("keydown",e=>{
-  if(endVisible){
-    if(e.key.toLowerCase()==='h') factoryReset();
+ 
+
+/* ================= FACTORY INIT ================= */
+
+function factoryInit(){
+
+  stopTimer();
+
+  total = 0;
+
+  remaining = 0;
+
+  mode = "IDLE";
+
+  manualBuffer = "";
+
+  document.getElementById("manual").style.display="none";
+
+  document.getElementById("end").style.display="none";
+
+  var t = document.getElementById("timer");
+
+  t.className="";
+
+  t.textContent="00:00";
+
+}
+
+ 
+
+/* ================= INPUT ================= */
+
+document.addEventListener("keydown",function(e){
+
+ 
+
+  // END SCREEN
+
+  if(mode==="END"){
+
+    if(e.keyCode===13 || e.keyCode===10182){
+
+      resetAll();
+
+    }
+
     return;
+
   }
-  if(e.code==="Space"||e.key.toLowerCase()==='p') toggle();
-  if(e.key.toLowerCase()==='h') toggleControls();
+
+ 
+
+  // MANUAL
+
+  if(mode==="MANUAL"){
+
+    if(e.keyCode>=48 && e.keyCode<=57){
+
+      manualBuffer+=String.fromCharCode(e.keyCode);
+
+      updateManual(); return;
+
+    }
+
+    if(e.keyCode===13){ confirmManual(); return; }
+
+    if(e.keyCode===10009 || e.key==="Escape"){ cancelManual(); return; }
+
+    return;
+
+  }
+
+ 
+
+  // IDLE / RUNNING
+
+  if(e.keyCode>=48 && e.keyCode<=57){
+
+    startManual(String.fromCharCode(e.keyCode));
+
+  }
+
 });
 
-/* Pantalla final */
-function showEndScreen(){
-  endVisible=true;
-  document.getElementById("container").style.display="none";
-  document.getElementById("end-screen").style.display="flex";
-}
-function hideEnd(){
-  endVisible=false;
-  document.getElementById("end-screen").style.display="none";
-  document.getElementById("container").style.display="flex";
-}
+ 
 
-/* Audio */
-function beep(){
-  const a=new (window.AudioContext||window.webkitAudioContext)();
-  const o=a.createOscillator();
-  o.connect(a.destination);
-  o.start();
-  setTimeout(()=>o.stop(),1200);
-}
+/* ================= START ================= */
 
-/* Arranque */
-factoryReset();
+factoryInit();
+
 </script>
 
+ 
+
 </body>
+
 </html>
